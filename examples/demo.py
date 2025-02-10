@@ -1,5 +1,5 @@
 import asyncio
-from xhs_spider import XHSSpider
+from xhs_crawl import XHSSpider
 
 async def main():
     # 初始化爬虫

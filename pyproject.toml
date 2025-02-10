@@ -1,9 +1,29 @@
 [tool.poetry]
-name = "xhs-spider"
+name = "xhs-crawl"
 version = "0.1.0"
-description = ""
+description = "一个异步的小红书爬虫工具，支持笔记内容和图片的批量下载"
 authors = ["LGrok <luolin.work@gmail.com>"]
 readme = "README.md"
+license = "MIT"
+keywords = ["spider", "crawler", "xiaohongshu", "download"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+    "Topic :: Software Development :: Libraries :: Python Modules"
+]
+packages = [{include = "xhs_crawl"}]
+
+[tool.poetry.urls]
+"Homepage" = "https://github.com/LGrok/xhs-crawl"
+"Bug Tracker" = "https://github.com/LGrok/xhs-crawl/issues"
+
+[tool.poetry.scripts]
+xhs-crawl = "xhs_crawl.cli:main"
 
 [tool.poetry.dependencies]
 python = "^3.9"

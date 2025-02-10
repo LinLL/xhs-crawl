@@ -1,5 +1,5 @@
 import pytest
-from xhs_spider.models import XHSPost
+from xhs_crawl.models import XHSPost
 
 def test_xhs_post_creation():
     """测试XHSPost模型的基本创建功能"""

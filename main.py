@@ -1,6 +1,6 @@
 import asyncio
 import argparse
-from xhs_spider import XHSSpider
+from xhs_crawl import XHSSpider
 
 async def main(url: str, save_dir: str = "./downloads"):
     # 初始化爬虫

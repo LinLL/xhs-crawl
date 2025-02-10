@@ -2,7 +2,7 @@ import pytest
 import pytest_asyncio
 import os
 import aiofiles
-from xhs_spider import XHSSpider, XHSPost
+from xhs_crawl import XHSSpider, XHSPost
 from unittest.mock import AsyncMock, patch, MagicMock
 
 pytestmark = pytest.mark.asyncio

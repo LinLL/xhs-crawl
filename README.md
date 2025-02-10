@@ -1,4 +1,4 @@
-# XHS Spider
+# XHS Crawl
 
 小红书内容爬虫工具
 
@@ -12,4 +12,4 @@
 ## 安装
 
 ```bash
-pip install xhs-spider
+pip install xhs-crawl
