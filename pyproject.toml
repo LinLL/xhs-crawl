@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "xhs-spider"
+version = "0.1.0"
+description = ""
+authors = ["LGrok <luolin.work@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+httpx = "^0.25.2"
+aiofiles = "^23.2.1"
+beautifulsoup4 = "^4.12.3"
+fake-useragent = "^1.4.0"
+loguru = "^0.7.2"
+pydantic = "^2.6.1"
+tenacity = "^8.2.3"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^25.1.0"
+pytest = "^8.3.4"
+pytest-asyncio = "^0.25.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+asyncio_mode = "strict"
+asyncio_default_fixture_loop_scope = "function"
