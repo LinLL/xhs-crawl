@@ -8,6 +8,8 @@ import re
 import os
 import base64
 import aiofiles
+import random
+import asyncio
 
 class XHSSpider:
     """小红书爬虫主类"""
@@ -19,7 +21,7 @@ class XHSSpider:
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
             'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
         }
-
+        
     async def get_post_data(self, url: str) -> Optional[XHSPost]:
         """获取帖子数据"""
         max_retries = 3
@@ -40,11 +42,19 @@ class XHSSpider:
                     retry_count += 1
                     logger.warning(f"Encountered redirect (302), attempt {retry_count} of {max_retries}")
                     continue
-
+                
                 soup = BeautifulSoup(response.text, 'html.parser')
                 # 提取标题和内容
                 title = soup.find('title')
                 content = soup.find('meta', {'name': 'description'})
+                if content and content.get('content') == "":
+                    # 遇到空内容时随机等待1-5秒后重试
+                    wait_time = random.uniform(1, 5)
+                    await asyncio.sleep(wait_time)
+                    self.headers['User-Agent'] = self.ua.random
+                    logger.warning(f"Empty content found, waiting {wait_time:.2f}s before retrying... (attempt {retry_count + 1} of {max_retries})")
+                    retry_count += 1
+                    continue
                 
                 # 提取图片URL
                 image_urls = []
