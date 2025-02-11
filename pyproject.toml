@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "xhs-crawl"
-version = "0.1.0"
+version = "0.1.1"
 description = "一个异步的小红书爬虫工具，支持笔记内容和图片的批量下载"
 authors = ["LGrok <luolin.work@gmail.com>"]
 readme = "README.md"
@@ -19,8 +19,8 @@ classifiers = [
 packages = [{include = "xhs_crawl"}]
 
 [tool.poetry.urls]
-"Homepage" = "https://github.com/LGrok/xhs-crawl"
-"Bug Tracker" = "https://github.com/LGrok/xhs-crawl/issues"
+"Homepage" = "https://github.com/LinLL/xhs-crawl"
+"Bug Tracker" = "https://github.com/LinLL/xhs-crawl/issues"
 
 [tool.poetry.scripts]
 xhs-crawl = "xhs_crawl.cli:main"
