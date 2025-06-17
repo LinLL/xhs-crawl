@@ -59,7 +59,7 @@ class XHSSpider:
                     json_data = json.loads(json_str_match)
                     
                     # 根据新的JSON结构更新提取逻辑
-                    note_detail_path = ['note', 'noteDetailMap', post_id, 'note']
+                    note_detail_path = ['noteData', 'data', "noteData"]
                     note_detail = self._get_nested_value(json_data, note_detail_path)
                     
                     if note_detail:
@@ -77,13 +77,10 @@ class XHSSpider:
                             for img in image_list:
                                 if isinstance(img, dict):
                                     # 优先使用 urlDefault
-                                    if img.get('urlDefault'):
-                                        image_urls.append(img.get('urlDefault'))
+                                    if img.get('url'):
+                                        image_urls.append(img.get('url'))
                                     # 其次尝试从 infoList 中获取
-                                    elif img.get('infoList'):
-                                        info_list = img.get('infoList')
-                                        if isinstance(info_list, list) and len(info_list) > 0 and info_list[0].get('url'):
-                                            image_urls.append(info_list[0].get('url'))
+                                    
                             data['image_list'] = image_urls
 
             except json.JSONDecodeError as e:

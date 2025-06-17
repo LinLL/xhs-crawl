@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "xhs-crawl"
-version = "0.1.4"
+version = "0.1.5"
 description = "一个异步的小红书爬虫工具，支持笔记内容和图片的批量下载"
 authors = ["LGrok <luolin.work@gmail.com>"]
 readme = "README.md"
