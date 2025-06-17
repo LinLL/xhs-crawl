@@ -10,6 +10,7 @@ import base64
 import aiofiles
 import random
 import asyncio
+import json
 
 class XHSSpider:
     """小红书爬虫主类"""
@@ -22,6 +23,75 @@ class XHSSpider:
             'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
         }
         
+    def _get_nested_value(self, data: dict, keys: list):
+        """
+        从嵌套字典中安全地获取值。
+        """
+        current_data = data
+        for key in keys:
+            if isinstance(current_data, dict) and key in current_data:
+                current_data = current_data[key]
+            else:
+                return None
+        return current_data
+
+    async def _extract_initial_state_data(self, soup: BeautifulSoup, post_id: str) -> dict:
+        """
+        从script标签的window.__INITIAL_STATE__中提取帖子标题、描述和图片列表。
+        """
+        data = {}
+        script_tag = soup.find('script', string=re.compile(r'window\.__INITIAL_STATE__'))
+        if script_tag:
+            script_content = script_tag.string
+            try:
+                # 使用 split 提取 JS 对象字符串
+                json_str_match = script_content.split("__INITIAL_STATE__=")[-1]
+                json_str_match = json_str_match.split("</script>")[0].strip()
+
+                # 修复非标准JSON：将 undefined 替换为 null
+                json_str_match = json_str_match.replace('undefined', 'null')
+
+                # 移除可能的尾随分号
+                if json_str_match.endswith(';'):
+                    json_str_match = json_str_match[:-1]
+                
+                if json_str_match:
+                    json_data = json.loads(json_str_match)
+                    
+                    # 根据新的JSON结构更新提取逻辑
+                    note_detail_path = ['note', 'noteDetailMap', post_id, 'note']
+                    note_detail = self._get_nested_value(json_data, note_detail_path)
+                    
+                    if note_detail:
+                        title = note_detail.get('title')
+                        if title:
+                            data['title'] = title
+                        
+                        desc = note_detail.get('desc')
+                        if desc:
+                            data['desc'] = desc
+                            
+                        image_list = note_detail.get('imageList')
+                        if image_list:
+                            image_urls = []
+                            for img in image_list:
+                                if isinstance(img, dict):
+                                    # 优先使用 urlDefault
+                                    if img.get('urlDefault'):
+                                        image_urls.append(img.get('urlDefault'))
+                                    # 其次尝试从 infoList 中获取
+                                    elif img.get('infoList'):
+                                        info_list = img.get('infoList')
+                                        if isinstance(info_list, list) and len(info_list) > 0 and info_list[0].get('url'):
+                                            image_urls.append(info_list[0].get('url'))
+                            data['image_list'] = image_urls
+
+            except json.JSONDecodeError as e:
+                logger.error(f"Error decoding JSON from script tag: {e}")
+            except Exception as e:
+                logger.error(f"Error extracting data from __INITIAL_STATE__: {e}")
+        return data
+
     async def get_post_data(self, url: str) -> Optional[XHSPost]:
         """获取帖子数据"""
         max_retries = 3
@@ -29,12 +99,18 @@ class XHSSpider:
 
         while retry_count < max_retries:
             try:
-                post_id = re.search(r'/explore/([\w]+)', url)
-                if not post_id:
+                # 尝试匹配 /explore/ 格式
+                post_id_match = re.search(r'/explore/([\w]+)', url)
+                
+                if not post_id_match:
+                    # 如果 /explore/ 格式不匹配，则尝试匹配 /discovery/item/ 格式
+                    post_id_match = re.search(r'/discovery/item/([\w]+)', url)
+                
+                if not post_id_match:
                     logger.error(f"Invalid URL format: {url}")
                     return None
 
-                post_id = post_id.group(1)
+                post_id = post_id_match.group(1)
                 response = await self.client.get(url, headers=self.headers, follow_redirects=True)
                 response.raise_for_status()
 
@@ -44,6 +120,19 @@ class XHSSpider:
                     continue
                 
                 soup = BeautifulSoup(response.text, 'html.parser')
+                
+                # 尝试从 __INITIAL_STATE__ 提取数据
+                initial_state_data = await self._extract_initial_state_data(soup, post_id)
+                if initial_state_data.get('title'): # 检查是否成功提取到数据
+                    logger.info("Successfully extracted data from __INITIAL_STATE__.")
+                    return XHSPost(
+                        post_id=post_id,
+                        title=initial_state_data.get('title'),
+                        content=initial_state_data.get('desc'),
+                        images=initial_state_data.get('image_list', [])
+                    )
+
+                logger.warning("Failed to extract data from __INITIAL_STATE__, falling back to meta tags.")
                 # 提取标题和内容
                 title = soup.find('title')
                 content = soup.find('meta', {'name': 'description'})
